@@ -1,0 +1,13 @@
+version: "3.7"
+services:
+  bookmybird-app:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Containerfile
+      args:
+        - PYTHON_VERSION=3.11
+    volumes:
+      - ./app:/usr/src/app
+    environment:
+      POETRY_VIRTUALENVS_IN_PROJECT: 'true'

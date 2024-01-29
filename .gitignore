@@ -1,0 +1,5 @@
+.idea/
+app/.venv/
+app/data/
+app/pyproject.toml
+app/poetry.lock

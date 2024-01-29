@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "BookMyBird"
+version = "v1"
+description = ""
+license = "Creative Commons Attribution-NonCommercial 4.0 International Public License"
+readme = 'README.md'
+repository = "https://github.com/dennissiemensma/bookmybird"
+authors = [
+    "Dennis Siemensma",
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "^2.0"
+
+[tool.poetry.dev-dependencies]
+black = "^24.0"
