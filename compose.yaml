@@ -6,9 +6,18 @@ services:
     build:
       context: .
       dockerfile: Containerfile
-      args:
-        - PYTHON_VERSION=3.11
     volumes:
       - ./app:/usr/src/app
     environment:
-      POETRY_VIRTUALENVS_IN_PROJECT: 'true'
+      DESKBIRD_TIMEZONE: 'Europe/Amsterdam'
+      REQUEST_USER_AGENT: 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      DESKBIRD_RESOURCE_ID: 'OVERRIDE_ME'
+      DESKBIRD_WORKSPACE_ID: 'OVERRIDE_ME'
+      DESKBIRD_USER_ID: 'OVERRIDE_ME'
+      DESKBIRD_ZONE_ITEM_IDS_ON_MONDAYS: 'OVERRIDE_ME,OVERRIDE_ME'
+      DESKBIRD_ZONE_ITEM_IDS_ON_TUESDAYS: 'OVERRIDE_ME,OVERRIDE_ME'
+      DESKBIRD_ZONE_ITEM_IDS_ON_WEDNESDAYS: 'OVERRIDE_ME,OVERRIDE_ME'
+      DESKBIRD_ZONE_ITEM_IDS_ON_THURSDAYS: 'OVERRIDE_ME,OVERRIDE_ME'
+      DESKBIRD_ZONE_ITEM_IDS_ON_FRIDAYS: 'OVERRIDE_ME,OVERRIDE_ME'
+
+#     {"bookings":[{"bookingStartTime":1706853600000,"bookingEndTime":1706893200000,"internal":true,"isAnonymous":false,"isDayPass":false,"resourceId":"70645","zoneItemId":475102,"workspaceId":"6817","userId":"129925"}]}
