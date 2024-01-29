@@ -12,6 +12,7 @@ authors = [
 [tool.poetry.dependencies]
 python = "^3.11"
 requests = "^2.0"
+pytz = ">2023.0"
 
 [tool.poetry.dev-dependencies]
 black = "^24.0"
