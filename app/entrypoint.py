@@ -1,5 +1,6 @@
-from time import sleep
+import booker
+
 
 while True:
-    print("Entry...")
-    sleep(1)
+    print("Starting booker...")
+    booker.run()
