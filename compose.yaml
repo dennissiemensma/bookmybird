@@ -1,6 +1,7 @@
 version: "3.7"
 services:
   bookmybird-app:
+    container_name: bookmybird-app
     restart: unless-stopped
     build:
       context: .
