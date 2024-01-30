@@ -40,14 +40,19 @@ def book_zone_items(target_date: date, zone_item_ids: List[int]):
 
 def run():
     local_tz = pytz.timezone(environ.get("DESKBIRD_TIMEZONE"))
-    print(f"[Config] Local timezone: {local_tz}")
+    print(f"[Config] Local timezone:                       {local_tz}")
 
     deskbird_resource_id = environ.get("DESKBIRD_RESOURCE_ID")
     deskbird_workspace_id = environ.get("DESKBIRD_WORKSPACE_ID")
     deskbird_user_id = environ.get("DESKBIRD_USER_ID")
-    print(f"[Config] Deskbird resource ID: {deskbird_resource_id}")
-    print(f"[Config] Deskbird workspace ID: {deskbird_workspace_id}")
-    print(f"[Config] Deskbird user ID: {deskbird_user_id}")
+    print(f"[Config] Deskbird resource ID:                 {deskbird_resource_id}")
+    print(f"[Config] Deskbird workspace ID:                {deskbird_workspace_id}")
+    print(f"[Config] Deskbird user ID:                     {deskbird_user_id}")
+
+    deskbird_google_auth_refresh_token = environ.get("DESKBIRD_GOOGLE_AUTH_REFRESH_TOKEN")
+    deskbird_google_auth_key = environ.get("DESKBIRD_GOOGLE_AUTH_KEY")
+    print(f"[Config] Deskbird Google Auth refresh token:   {deskbird_google_auth_refresh_token[0]}...{deskbird_google_auth_refresh_token[-1]} ({len(deskbird_google_auth_refresh_token)} chars)")
+    print(f"[Config] Deskbird Google Auth key:             {deskbird_google_auth_key[0]}...{deskbird_google_auth_key[-1]} ({len(deskbird_google_auth_key)} chars)")
 
     deskbird_zone_ids_on_mondays = environ.get(
         "DESKBIRD_ZONE_ITEM_IDS_ON_MONDAYS"
@@ -64,13 +69,13 @@ def run():
     deskbird_zone_ids_on_fridays = environ.get(
         "DESKBIRD_ZONE_ITEM_IDS_ON_FRIDAYS"
     ).split(",")
-    print(f"[Config] Deskbird zone IDs on MONDAYs: {deskbird_zone_ids_on_mondays}")
-    print(f"[Config] Deskbird zone IDs on TUESDAYs: {deskbird_zone_ids_on_tuesdays}")
+    print(f"[Config] Deskbird zone IDs on MONDAYs:         {deskbird_zone_ids_on_mondays}")
+    print(f"[Config] Deskbird zone IDs on TUESDAYs:        {deskbird_zone_ids_on_tuesdays}")
     print(
-        f"[Config] Deskbird zone IDs on WEDNESDAYs: {deskbird_zone_ids_on_wednesdays}"
+        f"[Config] Deskbird zone IDs on WEDNESDAYs:      {deskbird_zone_ids_on_wednesdays}"
     )
-    print(f"[Config] Deskbird zone IDs on THURSDAYs: {deskbird_zone_ids_on_thursdays}")
-    print(f"[Config] Deskbird zone IDs on FRIDAYs: {deskbird_zone_ids_on_fridays}")
+    print(f"[Config] Deskbird zone IDs on THURSDAYs:       {deskbird_zone_ids_on_thursdays}")
+    print(f"[Config] Deskbird zone IDs on FRIDAYs:         {deskbird_zone_ids_on_fridays}")
 
     while True:
         now = datetime.now(local_tz)
