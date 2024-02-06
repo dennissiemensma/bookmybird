@@ -1,5 +1,5 @@
 # BookMyBird
-**Unofficial** CLI tool for booking resources recurring in DeskBird. Not affiliated in any way with DeskBird. Use at own risk.
+**Unofficial** CLI tool for booking resources recurringly in DeskBird. Not affiliated in any way with DeskBird. Use at own risk.
 
 ## Setup
 - Install Docker: https://docs.docker.com/engine/install/

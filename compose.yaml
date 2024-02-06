@@ -10,5 +10,5 @@ services:
       - ./app:/usr/src/app
     environment:
       # See compose.override.TEMPLATE.yaml for additional env vars required.
-      DESKBIRD_TIMEZONE: 'Europe/Amsterdam'
       REQUEST_USER_AGENT: 'BookMyBird/1.0 (https://github.com/dennissiemensma/bookmybird)'
+      DESKBIRD_TIMEZONE: 'Europe/Amsterdam'
