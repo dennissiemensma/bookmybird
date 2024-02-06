@@ -46,11 +46,7 @@ def run():
     )
 
     # Keep access token refreshed periodically. This will USUALLY result in one being ready to use
-    scheduler.enter(
-        delay=60*60,
-        priority=1,
-        action=sync_access_token
-    )
+    scheduler.enter(delay=60 * 60, priority=1, action=sync_access_token)
 
     while True:
         # # Schedule booking mechanism just past local midnight. Every time again and again.
@@ -180,7 +176,7 @@ def get_access_token() -> str:
 
 
 def list_workspace_zones():
-    """ Lists all zones available in the workspace. May help you in configuring DESKBIRD_ZONE_ITEM_IDS_ON_*. """
+    """Lists all zones available in the workspace. May help you in configuring DESKBIRD_ZONE_ITEM_IDS_ON_*."""
     bearer_token = get_access_token()
     response = requests.get(
         url=f"https://app.deskbird.com/api/v1.2/internalWorkspaces/{DESKBIRD_WORKSPACE_ID}/zones?internal",
@@ -189,17 +185,23 @@ def list_workspace_zones():
             "Authorization": f"Bearer {bearer_token}",
         },
     )
-    print(f"[list_workspace_zones] Request for workspace #{DESKBIRD_WORKSPACE_ID} zones: {response.url}")
-    print(f"[list_workspace_zones] Response for workspace #{DESKBIRD_WORKSPACE_ID} zones: HTTP {response.status_code}")
+    print(
+        f"[list_workspace_zones] Request for workspace #{DESKBIRD_WORKSPACE_ID} zones: {response.url}"
+    )
+    print(
+        f"[list_workspace_zones] Response for workspace #{DESKBIRD_WORKSPACE_ID} zones: HTTP {response.status_code}"
+    )
 
     if response.status_code != 200:
-        raise RuntimeError('[list_workspace_zones] Failed')
+        raise RuntimeError("[list_workspace_zones] Failed")
 
     for current_result in response.json()["results"]:
-        current_resource_type = current_result['availability']['resourceType']
+        current_resource_type = current_result["availability"]["resourceType"]
 
-        for current_zone_item in current_result['availability']['zoneItems']:
-            print(f"[list_workspace_zones] Zone item #{current_zone_item['id']} -> ({current_resource_type:<10}: {current_zone_item['name']})")
+        for current_zone_item in current_result["availability"]["zoneItems"]:
+            print(
+                f"[list_workspace_zones] Zone item #{current_zone_item['id']} -> ({current_resource_type:<10}: {current_zone_item['name']})"
+            )
 
 
 def utc_now_timestamp():
