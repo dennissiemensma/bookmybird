@@ -12,6 +12,7 @@ import pytz
 
 
 # Settings. Read only once on startup.
+IDLE_SLEEP_SECONDS = 1
 LOCAL_ACCESS_TOKEN_EXPIRY_SLACK = (
     60  # Expires tokens X seconds earlier to prevent in-flight token expiry.
 )
@@ -33,7 +34,39 @@ DESKBIRD_GOOGLE_AUTH_REFRESH_TOKEN = environ.get("DESKBIRD_GOOGLE_AUTH_REFRESH_T
 
 
 # Global event scheduler, since we're idle about 99% of the time anyway.
-scheduler = sched.scheduler(time.time, time.sleep)
+scheduler = sched.scheduler(timefunc=time.time, delayfunc=time.sleep)
+
+
+def run():
+    # Once.
+    scheduler.enterabs(
+        time=utc_now_timestamp(),
+        priority=1,
+        action=startup_run,
+    )
+
+    # Keep access token refreshed periodically. This will USUALLY result in one being ready to use
+    scheduler.enter(
+        delay=60*60,
+        priority=1,
+        action=sync_access_token
+    )
+
+    while True:
+        # # Schedule booking mechanism just past local midnight. Every time again and again.
+        # scheduler.enterabs(
+        #     time=utc_now_timestamp() + 1,
+        #     priority=1,
+        #     action=daily_run,
+        #     kwargs=dict(
+        #         # Kwargs passed to daily_run()
+        #     )
+        # )
+
+        print(f"Running booker iteration... until next event")
+        print(f"Event queue: {scheduler.queue}")
+        scheduler.run(blocking=False)
+        time.sleep(IDLE_SLEEP_SECONDS)
 
 
 def daily_run():
@@ -62,10 +95,6 @@ def sync_access_token():
         )
         if utc_now_timestamp() + LOCAL_ACCESS_TOKEN_EXPIRY_SLACK > token_expires_at:
             raise RuntimeError("[sync_access_token] Expired access token")
-
-        print(
-            f"[sync_access_token] Found valid access token for: {token_claims['name']} ({token_claims['email']})"
-        )
 
         return access_token
     except Exception as e:
@@ -105,49 +134,72 @@ def get_access_token() -> str:
     return f.read()
 
 
-def book_zone_items(target_date: date, local_tz, zone_item_ids: List[int]):
+# def book_zone_items(target_date: date, local_tz, zone_item_ids: List[int]):
+#     bearer_token = get_access_token()
+#
+#     midnight = datetime.combine(date=target_date, time=datetime.time())
+#     local_midnight = local_tz.localize(midnight)
+#     booking_start_local = local_tz.normalize(local_midnight + timedelta(hours=7))
+#     booking_end_local = local_tz.normalize(local_midnight + timedelta(hours=18))
+#
+#     for current_zone_item_id in zone_item_ids:
+#         booking_start_utc_seconds = time.mktime(
+#             booking_start_local.astimezone(pytz.utc).timetuple()
+#         )
+#         booking_end_utc_seconds = time.mktime(
+#             booking_end_local.astimezone(pytz.utc).timetuple()
+#         )
+#
+#         print(
+#             f"[book_zone_items] Trying to book zone item {current_zone_item_id} for {booking_start_local} - {booking_end_local}"
+#         )
+#         response = requests.post(
+#             url="https://app.deskbird.com/api/v1.1/multipleDayBooking",
+#             headers={
+#                 "User-Agent": REQUEST_USER_AGENT,
+#                 "Authorization": f"Bearer {bearer_token}",
+#             },
+#             json={
+#                 "bookings": [
+#                     {
+#                         "bookingStartTime": booking_start_utc_seconds,
+#                         "bookingEndTime": booking_end_utc_seconds,
+#                         "internal": True,
+#                         "isAnonymous": False,
+#                         "isDayPass": False,
+#                         "resourceId": DESKBIRD_RESOURCE_ID,
+#                         "zoneItemId": current_zone_item_id,
+#                         "workspaceId": DESKBIRD_WORKSPACE_ID,
+#                         "userId": DESKBIRD_USER_ID,
+#                     }
+#                 ]
+#             },
+#         )
+#         print(f"[book_zone_items] Request for zone item {current_zone_item_id}: {response.url}")
+#         print(f"[book_zone_items] Response for zone item {current_zone_item_id}: HTTP {response.status_code} - {response.raw}")
+
+
+def list_workspace_zones():
+    """ Lists all zones available in the workspace. May help you in configuring DESKBIRD_ZONE_ITEM_IDS_ON_*. """
     bearer_token = get_access_token()
+    response = requests.get(
+        url=f"https://app.deskbird.com/api/v1.2/internalWorkspaces/{DESKBIRD_WORKSPACE_ID}/zones?internal",
+        headers={
+            "User-Agent": REQUEST_USER_AGENT,
+            "Authorization": f"Bearer {bearer_token}",
+        },
+    )
+    print(f"[list_workspace_zones] Request for workspace #{DESKBIRD_WORKSPACE_ID} zones: {response.url}")
+    print(f"[list_workspace_zones] Response for workspace #{DESKBIRD_WORKSPACE_ID} zones: HTTP {response.status_code}")
 
-    midnight = datetime.combine(date=target_date, time=datetime.time())
-    local_midnight = local_tz.localize(midnight)
-    booking_start_local = local_tz.normalize(local_midnight + timedelta(hours=7))
-    booking_end_local = local_tz.normalize(local_midnight + timedelta(hours=18))
+    if response.status_code != 200:
+        raise RuntimeError('[list_workspace_zones] Failed')
 
-    for current_zone_item_id in zone_item_ids:
-        booking_start_utc_seconds = time.mktime(
-            booking_start_local.astimezone(pytz.utc).timetuple()
-        )
-        booking_end_utc_seconds = time.mktime(
-            booking_end_local.astimezone(pytz.utc).timetuple()
-        )
+    for current_result in response.json()["results"]:
+        current_resource_type = current_result['availability']['resourceType']
 
-        print(
-            f"Trying to book zone item {current_zone_item_id} for {booking_start_local} - {booking_end_local}"
-        )
-        # response = requests.post(
-        #     url="https://app.deskbird.com/api/v1.1/multipleDayBooking",
-        #     headers={
-        #         "User-Agent": REQUEST_USER_AGENT,
-        #         "Authorization": f"Bearer {bearer_token}",
-        #     },
-        #     json={
-        #         "bookings": [
-        #             {
-        #                 "bookingStartTime": booking_start_utc_seconds,
-        #                 "bookingEndTime": booking_end_utc_seconds,
-        #                 "internal": True,
-        #                 "isAnonymous": False,
-        #                 "isDayPass": False,
-        #                 "resourceId": DESKBIRD_RESOURCE_ID,
-        #                 "zoneItemId": current_zone_item_id,
-        #                 "workspaceId": DESKBIRD_WORKSPACE_ID,
-        #                 "userId": DESKBIRD_USER_ID,
-        #             }
-        #         ]
-        #     },
-        # )
-        # print(f"Request for zone item {current_zone_item_id}: {response.url}")
-        # print(f"Response for zone item {current_zone_item_id}: HTTP {response.status_code} - {response.raw}")
+        for current_zone_item in current_result['availability']['zoneItems']:
+            print(f"[list_workspace_zones] Zone item #{current_zone_item['id']} -> ({current_resource_type:<10}: {current_zone_item['name']})")
 
 
 def utc_now_timestamp():
@@ -183,28 +235,8 @@ def startup_run():
         f"[Config] Deskbird zone IDs on FRIDAYs:         {DESKBIRD_ZONE_ITEM_IDS_ON_FRIDAYS.split(',')}"
     )
 
+    # Initial refresh.
     sync_access_token()
 
-
-def run():
-    # Once.
-    scheduler.enterabs(
-        time=utc_now_timestamp() + 1,
-        priority=1,
-        action=startup_run,
-    )
-
-    # scheduler.enterabs(
-    #     time=utc_now_timestamp() + 1,
-    #     priority=1,
-    #     action=daily_run,
-    #     kwargs=dict(
-    #         # Kwargs passed to daily_run()
-    #     )
-    # )
-
-    while True:
-        print(f"Running booker iteration... until next event")
-        print(f"Event queue: {scheduler.queue}")
-        scheduler.run(blocking=True)
-        time.sleep(1)
+    # One-time listing.
+    list_workspace_zones()
