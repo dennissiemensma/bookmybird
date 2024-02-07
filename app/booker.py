@@ -210,6 +210,8 @@ def book_zone_items(days_ahead: int) -> None:
         utc_booking_end_seconds = time.mktime(
             local_booking_end_local.astimezone(pytz.utc).timetuple()
         )
+        utc_booking_start_seconds = int(utc_booking_start_seconds * 1000)
+        utc_booking_end_seconds = int(utc_booking_end_seconds * 1000)
 
         print(
             f"[book_zone_items] Trying to book zone item #{current_zone_item_id} for {local_booking_start} ({utc_booking_start_seconds}) - {local_booking_end_local} ({utc_booking_end_seconds})"
