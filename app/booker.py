@@ -9,7 +9,6 @@ import requests
 import pytz
 
 
-IDLE_SLEEP_SECONDS = 1
 LOCAL_ACCESS_TOKEN_EXPIRY_SLACK = 60  # Expires tokens X seconds earlier to prevent edge case of in-flight token expiry.
 LOCAL_ACCESS_TOKEN_FILE = "data/birddesk-access-token.json"
 
@@ -64,40 +63,50 @@ def run() -> None:
         action=startup_run,
     )
 
-    # Always try to book ahead on startup. Even though it's not required.
+    # Initial booking attempt for target day on startup. Also starts event queue chain for midnight events.
     scheduler.enterabs(
         time=utc_now_timestamp(),
         priority=2,
-        action=book_zone_items,
-        kwargs=dict(days_ahead=BOOK_DAYS_AHEAD),
+        action=run_after_midnight,
     )
 
     # Keep access token refreshed periodically. This USUALLY results in one being ready to use at a random point in time
     scheduler.enter(delay=45 * 60, priority=2, action=get_access_token)
 
-    while True:
-        # (Re)schedule the NEXT booking check for upcoming midnight. Also works around local DST changes nicely.
-        local_timezone = pytz.timezone(LOCAL_TIMEZONE)
-        local_now = local_timezone.localize(datetime.now())
-        local_tomorrow = local_timezone.normalize(local_now + timedelta(days=1))
-        local_next_midnight = local_tomorrow.replace(
-            hour=0, minute=0, second=0, microsecond=0
-        )
-        utc_next_midnight = local_next_midnight.astimezone(pytz.utc)
-        utc_next_midnight_timestamp = time.mktime(utc_next_midnight.timetuple())
+    print("Running scheduler event loop...")
+    scheduler.run(blocking=True)  # This should NEVER finish
 
-        scheduler.enterabs(
-            time=utc_next_midnight_timestamp + 1,
-            priority=1,
-            action=book_zone_items,
-            kwargs=dict(days_ahead=BOOK_DAYS_AHEAD),
-        )
+    raise RuntimeError("Scheduler events depleted! (infinite event loop failed?")
 
-        print(
-            f"Event queue: {len(scheduler.queue)} event(s) queued... sleeping until next one"
-        )
-        scheduler.run(blocking=True)
-        time.sleep(IDLE_SLEEP_SECONDS)
+
+def run_after_midnight():
+    """Should be called once a day, just after (local) midnight."""
+    print("[run_after_midnight] Running midnight job")
+    book_target_zone_items()
+
+    # (Re)schedule the self for upcoming midnight. Also works around local DST changes nicely (23/24/25 hours days).
+    schedule_next_midnight_event()
+
+
+def schedule_next_midnight_event():
+    """Returns a handle to the event scheduled."""
+    local_timezone = pytz.timezone(LOCAL_TIMEZONE)
+    local_now = local_timezone.localize(datetime.now())
+    local_tomorrow = local_timezone.normalize(
+        local_now + timedelta(days=1)
+    )  # TODO: Test whether this works with DST
+    local_next_midnight = local_tomorrow.replace(
+        hour=0, minute=0, second=0, microsecond=0
+    )
+    print(f"[schedule_next_midnight_event] Rescheduling self for {local_next_midnight}")
+    utc_next_midnight = local_next_midnight.astimezone(pytz.utc)
+    utc_next_midnight_timestamp = time.mktime(utc_next_midnight.timetuple())
+
+    return scheduler.enterabs(
+        time=utc_next_midnight_timestamp + 1,
+        priority=1,
+        action=run_after_midnight,
+    )
 
 
 def utc_now_timestamp() -> float:
@@ -127,6 +136,7 @@ def get_access_token() -> str:
         if utc_now_timestamp() + LOCAL_ACCESS_TOKEN_EXPIRY_SLACK > token_expires_at:
             raise RuntimeError("[sync_access_token] Expired access token")
 
+        print("[sync_access_token] Local access token still OK")
         return access_token
     except Exception as e:
         print(f"[sync_access_token] Error: {e}")
@@ -161,18 +171,20 @@ def get_access_token() -> str:
     return access_token
 
 
-def book_zone_items(days_ahead: int) -> None:
+def book_target_zone_items() -> None:
     """Books whatever zone items are configured for the given target date (targeted by days ahead)."""
     local_timezone = pytz.timezone(LOCAL_TIMEZONE)
     local_now = local_timezone.localize(datetime.now())
-    local_target_day = local_timezone.normalize(local_now + timedelta(days=days_ahead))
+    local_target_day = local_timezone.normalize(
+        local_now + timedelta(days=BOOK_DAYS_AHEAD)
+    )
     local_target_midnight = local_target_day.replace(
         hour=0, minute=0, second=0, microsecond=0
     )
     local_target_day_name = local_target_midnight.strftime("%A")
 
     print(
-        f"[book_zone_items] Booking {days_ahead} day(s) ahead ({local_target_day_name}, {local_target_midnight})"
+        f"[book_zone_items] Booking {BOOK_DAYS_AHEAD} day(s) ahead ({local_target_day_name}, {local_target_midnight})"
     )
 
     day_of_week_zone_items_to_book = {
