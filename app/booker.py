@@ -19,6 +19,12 @@ BOOK_DAYS_AHEAD = int(
 )  # "Target" day ahead, NOT a RANGE of "0 to target"
 LOCAL_TIMEZONE = environ.get("LOCAL_TIMEZONE")
 REQUEST_USER_AGENT = environ.get("REQUEST_USER_AGENT")
+DESKBIRD_WORKING_HOURS_STARTING_HOUR = int(
+    environ.get("DESKBIRD_WORKING_HOURS_STARTING_HOUR")
+)
+DESKBIRD_WORKING_HOURS_CLOSING_HOUR = int(
+    environ.get("DESKBIRD_WORKING_HOURS_CLOSING_HOUR")
+)
 DESKBIRD_RESOURCE_ID = environ.get("DESKBIRD_RESOURCE_ID")
 DESKBIRD_WORKSPACE_ID = environ.get("DESKBIRD_WORKSPACE_ID")
 DESKBIRD_USER_ID = environ.get("DESKBIRD_USER_ID")
@@ -189,10 +195,10 @@ def book_zone_items(days_ahead: int) -> None:
     zone_item_ids = day_of_week_zone_items_to_book.split(",")
 
     local_booking_start = local_timezone.normalize(
-        local_target_midnight + timedelta(hours=7)
+        local_target_midnight + timedelta(hours=DESKBIRD_WORKING_HOURS_STARTING_HOUR)
     )
     local_booking_end_local = local_timezone.normalize(
-        local_target_midnight + timedelta(hours=18)
+        local_target_midnight + timedelta(hours=DESKBIRD_WORKING_HOURS_CLOSING_HOUR)
     )
 
     bearer_token = get_access_token()
@@ -206,7 +212,7 @@ def book_zone_items(days_ahead: int) -> None:
         )
 
         print(
-            f"[book_zone_items] Trying to book zone item #{current_zone_item_id} for {local_booking_start} - {local_booking_end_local}"
+            f"[book_zone_items] Trying to book zone item #{current_zone_item_id} for {local_booking_start} ({utc_booking_start_seconds}) - {local_booking_end_local} ({utc_booking_end_seconds})"
         )
         response = requests.post(
             url="https://app.deskbird.com/api/v1.1/multipleDayBooking",

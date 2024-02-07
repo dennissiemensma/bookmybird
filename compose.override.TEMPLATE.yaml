@@ -3,6 +3,8 @@ services:
   bookmybird-app:
     environment:
       BOOK_DAYS_AHEAD: '1'
+      DESKBIRD_WORKING_HOURS_STARTING_HOUR: '9'  # e.g 9 AM
+      DESKBIRD_WORKING_HOURS_CLOSING_HOUR: '17'  # e.g. 5 PM
       DESKBIRD_RESOURCE_ID: ''
       DESKBIRD_WORKSPACE_ID: ''
       DESKBIRD_USER_ID: ''
