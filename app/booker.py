@@ -91,12 +91,11 @@ def run_after_midnight():
 def schedule_next_midnight_event():
     """Returns a handle to the event scheduled."""
     local_timezone = pytz.timezone(LOCAL_TIMEZONE)
-    local_now = local_timezone.localize(datetime.now())
+    local_now = datetime.now().astimezone(local_timezone)
     local_midnight = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
     local_tomorrow_midnight = local_midnight + timedelta(
         days=1
     )  # TODO: Test whether this actually works well with DST
-    local_tomorrow_midnight = local_timezone.normalize(local_tomorrow_midnight)
 
     utc_next_midnight = local_tomorrow_midnight.astimezone(pytz.utc)
     utc_next_midnight_timestamp = time.mktime(utc_next_midnight.timetuple())
@@ -179,10 +178,9 @@ def get_access_token() -> str:
 def book_target_zone_items() -> None:
     """Books whatever zone items are configured for the given target date (targeted by days ahead)."""
     local_timezone = pytz.timezone(LOCAL_TIMEZONE)
-    local_now = local_timezone.localize(datetime.now())
+    local_now = datetime.now().astimezone(local_timezone)
     local_midnight = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
     local_target_midnight = local_midnight + timedelta(days=BOOK_DAYS_AHEAD)
-    local_target_midnight = local_timezone.normalize(local_target_midnight)
     local_target_day_name = local_target_midnight.strftime("%A")
 
     print(
