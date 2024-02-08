@@ -110,7 +110,7 @@ def schedule_next_midnight_event():
     )
 
     print("Sleeping for a few moments...")
-    time.sleep(60)
+    time.sleep(10)
 
 
 def utc_now_timestamp() -> float:
