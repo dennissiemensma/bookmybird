@@ -292,7 +292,7 @@ def list_workspace_zone_items() -> None:
 
         for current_zone_item in current_result["availability"]["zoneItems"]:
             print(
-                f"[list_workspace_zone_items] Zone item #{current_zone_item['id']} -> ({current_resource_type:<10}: {current_zone_item['name']})"
+                f"[list_workspace_zone_items] Zone item #{current_zone_item['id']} -> ({current_resource_type} : {current_zone_item['name']})"
             )
 
 
