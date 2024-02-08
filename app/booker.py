@@ -208,12 +208,15 @@ def book_target_zone_items() -> None:
 
     zone_item_ids = day_of_week_zone_items_to_book.split(",")
 
-    local_booking_start = local_timezone.normalize(
-        local_target_midnight + timedelta(hours=DESKBIRD_WORKING_HOURS_STARTING_HOUR)
+    local_booking_start = local_target_midnight + timedelta(
+        hours=DESKBIRD_WORKING_HOURS_STARTING_HOUR
     )
-    local_booking_end_local = local_timezone.normalize(
-        local_target_midnight + timedelta(hours=DESKBIRD_WORKING_HOURS_CLOSING_HOUR)
+    local_booking_start = local_timezone.normalize(local_booking_start)
+
+    local_booking_end_local = local_target_midnight + timedelta(
+        hours=DESKBIRD_WORKING_HOURS_CLOSING_HOUR
     )
+    local_booking_end_local = local_timezone.normalize(local_booking_end_local)
 
     bearer_token = get_access_token()
 
