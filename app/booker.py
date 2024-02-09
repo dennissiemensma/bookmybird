@@ -9,6 +9,7 @@ import requests
 import pytz
 
 
+IDLE_SLEEP = 5
 LOCAL_ACCESS_TOKEN_EXPIRY_SLACK = 60  # Expires tokens X seconds earlier to prevent edge case of in-flight token expiry.
 LOCAL_ACCESS_TOKEN_FILE = "data/birddesk-access-token.json"
 
@@ -74,9 +75,16 @@ def run() -> None:
     scheduler.enter(delay=45 * 60, priority=2, action=get_access_token)
 
     print("Running scheduler event loop...")
-    scheduler.run(blocking=True)  # This should NEVER finish
 
-    raise RuntimeError("Scheduler events depleted! (infinite event loop failed?")
+    while True:
+        scheduler.run(blocking=False)
+
+        if not scheduler.queue:
+            raise RuntimeError(
+                "Scheduler events depleted! (infinite event loop (re)scheduling failed?"
+            )
+
+        time.sleep(IDLE_SLEEP)
 
 
 def run_after_midnight():
@@ -108,9 +116,6 @@ def schedule_next_midnight_event():
         priority=1,
         action=run_after_midnight,
     )
-
-    print("Sleeping for a few moments...")
-    time.sleep(10)
 
 
 def utc_now_timestamp() -> float:
