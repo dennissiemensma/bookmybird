@@ -9,7 +9,7 @@ import requests
 import pytz
 
 
-IDLE_SLEEP = 5
+DEFAULT_SLEEP_TIME = 10
 LOCAL_ACCESS_TOKEN_EXPIRY_SLACK = 60  # Expires tokens X seconds earlier to prevent edge case of in-flight token expiry.
 LOCAL_ACCESS_TOKEN_FILE = "data/birddesk-access-token.json"
 
@@ -61,30 +61,50 @@ def run() -> None:
     scheduler.enterabs(
         time=utc_now_timestamp(),
         priority=1,
-        action=startup_run,
-    )
+        action=run_on_startup,
+    )  # One-time
 
     # Initial booking attempt for target day on startup. Also starts event queue chain for midnight events.
     scheduler.enterabs(
         time=utc_now_timestamp(),
         priority=2,
         action=run_after_midnight,
-    )
+    )  # One-time
 
     # Keep access token refreshed periodically. This USUALLY results in one being ready to use at a random point in time
-    scheduler.enter(delay=45 * 60, priority=2, action=get_access_token)
+    scheduler.enter(delay=45 * 60, priority=2, action=get_access_token)  # Recurring
 
     print("Running scheduler event loop...")
 
     while True:
+        # Status update. For logging, and debugging as well.
+        local_timezone = pytz.timezone(LOCAL_TIMEZONE)
+        sleep_time = None
+
+        for queued_event in scheduler.queue:
+            seconds_until_event = int(queued_event.time - utc_now_timestamp())
+
+            # Sleep until *just* before the next event.
+            if not sleep_time or seconds_until_event < sleep_time:
+                sleep_time = seconds_until_event - DEFAULT_SLEEP_TIME
+
+            local_event_time = datetime.fromtimestamp(queued_event.time).astimezone(
+                local_timezone
+            )
+            print(
+                f"[run] Upcoming event: {queued_event.action} @ {local_event_time} ({seconds_until_event} seconds)"
+            )
+
         scheduler.run(blocking=False)
 
         if not scheduler.queue:
             raise RuntimeError(
-                "Scheduler events depleted! (infinite event loop (re)scheduling failed?"
+                "Scheduler events depleted! Infinite event loop (re)scheduling failed?"
             )
 
-        time.sleep(IDLE_SLEEP)
+        sleep_time = 0 if sleep_time < 0 else sleep_time
+        print(f"[run] Sleeping for {sleep_time} second(s)...")
+        time.sleep(sleep_time)
 
 
 def run_after_midnight():
@@ -112,10 +132,11 @@ def schedule_next_midnight_event():
         f"[schedule_next_midnight_event] Rescheduling self for {local_tomorrow_midnight} ({utc_next_midnight} / {utc_next_midnight_timestamp})"
     )
     scheduler.enterabs(
-        time=utc_next_midnight_timestamp + 5,  # A little bit of slack...
+        time=utc_next_midnight_timestamp
+        + 5,  # A little bit of slack... preventing desync
         priority=1,
         action=run_after_midnight,
-    )
+    )  # One-time
 
 
 def utc_now_timestamp() -> float:
@@ -301,7 +322,7 @@ def list_workspace_zone_items() -> None:
             )
 
 
-def startup_run() -> None:
+def run_on_startup() -> None:
     print(f"[Config] Local timezone:                       {LOCAL_TIMEZONE}")
     print(f"[Config] User-Agent for requests:              {REQUEST_USER_AGENT}")
     print(f"[Config] Deskbird resource ID:                 {DESKBIRD_RESOURCE_ID}")
