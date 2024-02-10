@@ -102,7 +102,7 @@ def run() -> None:
                 "Scheduler events depleted! Infinite event loop (re)scheduling failed?"
             )
 
-        sleep_time = 0 if sleep_time < 0 else sleep_time
+        sleep_time = 1 if sleep_time < 0 else sleep_time
         print(f"[run] Sleeping for {sleep_time} second(s)...")
         time.sleep(sleep_time)
 
