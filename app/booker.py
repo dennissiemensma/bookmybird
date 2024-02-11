@@ -10,6 +10,7 @@ import pytz
 
 
 DEFAULT_SLEEP_TIME = 10
+MAX_SLEEP_TIME = 60 * 60
 LOCAL_ACCESS_TOKEN_EXPIRY_SLACK = 60  # Expires tokens X seconds earlier to prevent edge case of in-flight token expiry.
 LOCAL_ACCESS_TOKEN_FILE = "data/birddesk-access-token.json"
 
@@ -101,7 +102,10 @@ def run() -> None:
                 f"[run] Upcoming event: {queued_event.action} @ {local_event_time} ({seconds_until_event} seconds)"
             )
 
+        # Keep sleep within some boundaries.
         sleep_time = 1 if sleep_time < 0 else sleep_time
+        sleep_time = MAX_SLEEP_TIME if sleep_time > MAX_SLEEP_TIME else sleep_time
+
         print(f"[run] Sleeping for {sleep_time} second(s)...")
         time.sleep(sleep_time)
 
