@@ -74,10 +74,16 @@ def run() -> None:
     # Keep access token refreshed periodically. This USUALLY results in one being ready to use at a random point in time
     scheduler.enter(delay=45 * 60, priority=2, action=get_access_token)  # Recurring
 
-    print("Running scheduler event loop...")
-
     while True:
-        # Status update. For logging, and debugging as well.
+        print("[run] Running scheduler")
+        scheduler.run(blocking=False)
+
+        if not scheduler.queue:
+            raise RuntimeError(
+                "Scheduler events depleted! Infinite event loop (re)scheduling failed?"
+            )
+
+        # Status update. For logging and debugging.
         local_timezone = pytz.timezone(LOCAL_TIMEZONE)
         sleep_time = None
 
@@ -85,7 +91,7 @@ def run() -> None:
             seconds_until_event = int(queued_event.time - utc_now_timestamp())
 
             # Sleep until *just* before the next event.
-            if not sleep_time or seconds_until_event < sleep_time:
+            if sleep_time is None or seconds_until_event < sleep_time:
                 sleep_time = seconds_until_event - DEFAULT_SLEEP_TIME
 
             local_event_time = datetime.fromtimestamp(queued_event.time).astimezone(
@@ -93,13 +99,6 @@ def run() -> None:
             )
             print(
                 f"[run] Upcoming event: {queued_event.action} @ {local_event_time} ({seconds_until_event} seconds)"
-            )
-
-        scheduler.run(blocking=False)
-
-        if not scheduler.queue:
-            raise RuntimeError(
-                "Scheduler events depleted! Infinite event loop (re)scheduling failed?"
             )
 
         sleep_time = 1 if sleep_time < 0 else sleep_time
