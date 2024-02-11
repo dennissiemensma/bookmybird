@@ -63,17 +63,14 @@ def run() -> None:
         time=utc_now_timestamp(),
         priority=1,
         action=run_on_startup,
-    )  # One-time
+    )
 
     # Initial booking attempt for target day on startup. Also starts event queue chain for midnight events.
     scheduler.enterabs(
         time=utc_now_timestamp(),
         priority=2,
         action=run_after_midnight,
-    )  # One-time
-
-    # Keep access token refreshed periodically. This USUALLY results in one being ready to use at a random point in time
-    scheduler.enter(delay=45 * 60, priority=2, action=get_access_token)  # Recurring
+    )
 
     while True:
         print("[run] Running scheduler")
@@ -139,7 +136,13 @@ def schedule_next_midnight_event():
         + 5,  # A little bit of slack... preventing desync
         priority=1,
         action=run_after_midnight,
-    )  # One-time
+    )
+    # Refresh access token just a bit before that.
+    scheduler.enterabs(
+        time=utc_next_midnight_timestamp - 5,
+        priority=1,
+        action=get_access_token,
+    )
 
 
 def utc_now_timestamp() -> float:
