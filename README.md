@@ -1,23 +1,47 @@
 # BookMyBird
 **Unofficial** CLI tool for booking resources recurringly in DeskBird. Not affiliated in any way with DeskBird. Use at own risk.
 
+
+
 ## Setup
+### Docker
 - Install Docker: https://docs.docker.com/engine/install/
-- Configure you own env vars:
+
+### Config 
+- Configure your own env vars:
   ```shell
   cp compose.override.TEMPLATE.yaml compose.override.yaml
    ```
-- Preferences: Update ``BOOK_DAYS_AHEAD`` in ``compose.override.yaml``. 
-  - *Please note that a value of ``4`` results in the tool to target the single day 4 days ahead. 
-  - It's **not** a range to book today and the four consecutive days after as well. It will book one targeted day every time and does the same again after every midnight. 
-  - Also, on every startup/restart it will also try the first targeted day **once**, for convenience and debugging.
+  
+#### Deskbird settings
+- Company/account settings: Update in ``compose.override.yaml``
+  - ``DESKBIRD_RESOURCE_ID`` (*company*)
+  - ``DESKBIRD_WORKSPACE_ID`` (*company*)
+  - ``DESKBIRD_USER_ID`` (*your account*)
 
-- Deskbird stuff: Update ``DESKBIRD_RESOURCE_ID``, ``DESKBIRD_WORKSPACE_ID`` and ``DESKBIRD_USER_ID`` in ``compose.override.yaml``
-- Auth stuff: Update ``DESKBIRD_GOOGLE_AUTH_KEY`` and ``DESKBIRD_GOOGLE_AUTH_REFRESH_TOKEN`` in ``compose.override.yaml``
-- Update the zone item IDs for ``DESKBIRD_ZONE_ITEM_IDS_ON_*`` in ``compose.override.yaml``
-  - The latter may be multiple zone item IDs, comma separated. 
-  - Zone item IDs for your workspace will also be retrieved on startup and logged as output.  
+- Auth settings: Update in ``compose.override.yaml``:
+  - ``DESKBIRD_GOOGLE_AUTH_KEY`` (*your account*)
+  - ``DESKBIRD_GOOGLE_AUTH_REFRESH_TOKEN`` (*your account*)
+
+
+#### Tool settings
+- Booking preferences: Update in ``compose.override.yaml``:
+  - ``BOOK_DAYS_AHEAD``
+    - Please note that a value of ``6`` results in the tool to target the **single day** six days ahead. You may or may not be limited by your company's restrictions set in DeskBird. 
+    - E.g. if it's just past midnight, early on a **Wednesday**, a `BOOK_DAYS_AHEAD=6` will have this tool try to book your preferences for **next week Tuesday**.
+    - Additionally, on every startup/restart, it will try to book the targeted day **once**. Both for convenience and debugging.
+  
+  - ``DESKBIRD_ZONE_ITEM_IDS_ON_*`` (*per weekday*)
+    - The latter may be multiple zone item IDs, comma separated. 
+    - Zone item IDs for your workspace will also be retrieved on startup and logged as output.  
+
+
+### Finishing up
 - Run:
   ```shell
   docker-compose up -d
+  ```
+- Logs:
+  ```shell
+  docker logs bookmybird-app -f -t
   ```
