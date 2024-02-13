@@ -260,6 +260,7 @@ def book_target_zone_items() -> None:
     bearer_token = get_access_token()
 
     for current_zone_item_id in zone_item_ids:
+        current_zone_item_id = current_zone_item_id.strip()
         utc_booking_start_seconds = time.mktime(
             local_booking_start.astimezone(pytz.utc).timetuple()
         )
