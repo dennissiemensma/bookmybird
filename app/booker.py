@@ -10,7 +10,7 @@ import pytz
 
 
 DEFAULT_SLEEP_TIME = 10
-MAX_SLEEP_TIME = 60 * 60
+MAX_SLEEP_TIME = 6 * 60 * 60
 LOCAL_ACCESS_TOKEN_EXPIRY_SLACK = 60  # Expires tokens X seconds earlier to prevent edge case of in-flight token expiry.
 LOCAL_ACCESS_TOKEN_FILE = "data/birddesk-access-token.json"
 
