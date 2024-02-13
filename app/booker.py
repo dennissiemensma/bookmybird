@@ -121,9 +121,12 @@ def schedule_next_midnight_event():
     local_timezone = pytz.timezone(LOCAL_TIMEZONE)
     local_now = datetime.now().astimezone(local_timezone)
     local_midnight = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
-    local_tomorrow_midnight = local_midnight + timedelta(
-        days=1
-    )  # TODO: Test whether this actually works well with DST
+
+    # Required for DST transitions. Not pretty, but it works.
+    naive_local_tomorrow_midnight = datetime.combine(
+        date=local_midnight.date() + timedelta(days=1), time=local_midnight.time()
+    )
+    local_tomorrow_midnight = local_timezone.localize(naive_local_tomorrow_midnight)
 
     utc_next_midnight = local_tomorrow_midnight.astimezone(pytz.utc)
     utc_next_midnight_timestamp = time.mktime(utc_next_midnight.timetuple())
@@ -212,7 +215,13 @@ def book_target_zone_items() -> None:
     local_timezone = pytz.timezone(LOCAL_TIMEZONE)
     local_now = datetime.now().astimezone(local_timezone)
     local_midnight = local_now.replace(hour=0, minute=0, second=0, microsecond=0)
-    local_target_midnight = local_midnight + timedelta(days=BOOK_DAYS_AHEAD)
+
+    # Required for DST transitions. Not pretty, but it works.
+    naive_local_tomorrow_midnight = datetime.combine(
+        date=local_midnight.date() + timedelta(days=BOOK_DAYS_AHEAD),
+        time=local_midnight.time(),
+    )
+    local_target_midnight = local_timezone.localize(naive_local_tomorrow_midnight)
     local_target_day_name = local_target_midnight.strftime("%A")
 
     print(
