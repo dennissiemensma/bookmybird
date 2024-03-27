@@ -286,7 +286,7 @@ def book_target_zone_items() -> None:
                         "bookingEndTime": utc_booking_end_seconds,
                         "internal": True,
                         "isAnonymous": False,
-                        "isDayPass": False,
+                        "isDayPass": True,
                         "resourceId": DESKBIRD_RESOURCE_ID,
                         "zoneItemId": int(current_zone_item_id),
                         "workspaceId": DESKBIRD_WORKSPACE_ID,
