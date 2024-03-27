@@ -285,7 +285,7 @@ def book_target_zone_items() -> None:
                         "bookingStartTime": utc_booking_start_seconds,
                         "bookingEndTime": utc_booking_end_seconds,
                         "internal": True,
-                        "isAnonymous": False,
+                        "isAnonymous": False,  # This works when passing True, no matter if the feature is disabled.
                         "isDayPass": True,
                         "resourceId": DESKBIRD_RESOURCE_ID,
                         "zoneItemId": int(current_zone_item_id),
