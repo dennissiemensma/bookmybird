@@ -252,10 +252,10 @@ def book_target_zone_items() -> None:
     )
     local_booking_start = local_timezone.normalize(local_booking_start)
 
-    local_booking_end_local = local_target_midnight + timedelta(
+    local_booking_end = local_target_midnight + timedelta(
         hours=DESKBIRD_WORKING_HOURS_CLOSING_HOUR
     )
-    local_booking_end_local = local_timezone.normalize(local_booking_end_local)
+    local_booking_end = local_timezone.normalize(local_booking_end)
 
     bearer_token = get_access_token()
 
@@ -265,13 +265,13 @@ def book_target_zone_items() -> None:
             local_booking_start.astimezone(pytz.utc).timetuple()
         )
         utc_booking_end_seconds = time.mktime(
-            local_booking_end_local.astimezone(pytz.utc).timetuple()
+            local_booking_end.astimezone(pytz.utc).timetuple()
         )
         utc_booking_start_seconds = int(utc_booking_start_seconds * 1000)
         utc_booking_end_seconds = int(utc_booking_end_seconds * 1000)
 
         print(
-            f"[book_zone_items] Trying to book zone item #{current_zone_item_id} for {local_booking_start} ({utc_booking_start_seconds}) - {local_booking_end_local} ({utc_booking_end_seconds})"
+            f"[book_zone_items] Trying to book zone item #{current_zone_item_id} for {local_booking_start} ({utc_booking_start_seconds}) - {local_booking_end} ({utc_booking_end_seconds})"
         )
         response = requests.post(
             url="https://app.deskbird.com/api/v1.1/multipleDayBooking",
