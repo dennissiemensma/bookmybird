@@ -274,7 +274,7 @@ def book_target_zone_items() -> None:
             f"[book_zone_items] Trying to book zone item #{current_zone_item_id} for {local_booking_start} ({utc_booking_start_seconds}) - {local_booking_end} ({utc_booking_end_seconds})"
         )
         response = requests.post(
-            url="https://app.deskbird.com/api/v1.1/multipleDayBooking",
+            url="https://app.deskbird.com/api/v1.2/multipleDayBooking",
             headers={
                 "User-Agent": REQUEST_USER_AGENT,
                 "Authorization": f"Bearer {bearer_token}",
