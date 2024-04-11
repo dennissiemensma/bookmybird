@@ -100,7 +100,7 @@ def run() -> None:
             )
 
         # Keep sleep within some boundaries.
-        sleep_time = 1 if sleep_time < 0 else sleep_time
+        sleep_time = 1 if sleep_time <= 0 else sleep_time
         sleep_time = MAX_SLEEP_TIME if sleep_time > MAX_SLEEP_TIME else sleep_time
 
         print(f"[run] Sleeping for {sleep_time} second(s)...")
