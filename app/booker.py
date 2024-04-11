@@ -375,4 +375,4 @@ def run_on_startup() -> None:
     get_access_token()
 
     # One-time listing. You may or may not be interested in its output.
-    list_workspace_zone_items()
+    # list_workspace_zone_items()  # @TODO: Fixme
