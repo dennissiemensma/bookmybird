@@ -274,7 +274,7 @@ def book_target_zone_items() -> None:
             f"[book_zone_items] Trying to book zone item #{current_zone_item_id} for {local_booking_start} ({utc_booking_start_seconds}) - {local_booking_end} ({utc_booking_end_seconds})"
         )
         response = requests.post(
-            url="https://app.deskbird.com/api/v1.2/multipleDayBooking",
+            url="https://api.deskbird.com/api/v1.2/multipleDayBooking",
             headers={
                 "User-Agent": REQUEST_USER_AGENT,
                 "Authorization": f"Bearer {bearer_token}",
@@ -312,7 +312,7 @@ def list_workspace_zone_items() -> None:
     """Lists all zone items available in the workspace. May help you in configuring DESKBIRD_ZONE_ITEM_IDS_ON_*."""
     bearer_token = get_access_token()
     response = requests.get(
-        url=f"https://app.deskbird.com/api/v1.2/internalWorkspaces/{DESKBIRD_WORKSPACE_ID}/zones?internal",
+        url=f"https://api.deskbird.com/api/v1.2/internalWorkspaces/{DESKBIRD_WORKSPACE_ID}/zones?internal",
         headers={
             "User-Agent": REQUEST_USER_AGENT,
             "Authorization": f"Bearer {bearer_token}",
@@ -375,4 +375,4 @@ def run_on_startup() -> None:
     get_access_token()
 
     # One-time listing. You may or may not be interested in its output.
-    # list_workspace_zone_items()  # @TODO: Fixme
+    list_workspace_zone_items()
