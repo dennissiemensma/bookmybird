@@ -312,7 +312,7 @@ def list_workspace_zone_items() -> None:
     """Lists all zone items available in the workspace. May help you in configuring DESKBIRD_ZONE_ITEM_IDS_ON_*."""
     bearer_token = get_access_token()
     response = requests.get(
-        url=f"https://api.deskbird.com/api/v1.2/internalWorkspaces/{DESKBIRD_WORKSPACE_ID}/zones?internal",
+        url=f"https://api.deskbird.com/api/v1.2/internalWorkspaces/{DESKBIRD_WORKSPACE_ID}/zones?internal&startTime=0&endTime=9999999999999",
         headers={
             "User-Agent": REQUEST_USER_AGENT,
             "Authorization": f"Bearer {bearer_token}",
