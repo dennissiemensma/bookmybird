@@ -274,7 +274,7 @@ def book_target_zone_items() -> None:
             f"[book_zone_items] Trying to book zone item #{current_zone_item_id} for {local_booking_start} ({utc_booking_start_seconds}) - {local_booking_end} ({utc_booking_end_seconds})"
         )
         response = requests.post(
-            url="https://api.deskbird.com/api/v1.2/multipleDayBooking",
+            url="https://api.deskbird.com/v1.1/bookings",
             headers={
                 "User-Agent": REQUEST_USER_AGENT,
                 "Authorization": f"Bearer {bearer_token}",
@@ -284,13 +284,13 @@ def book_target_zone_items() -> None:
                     {
                         "bookingStartTime": utc_booking_start_seconds,
                         "bookingEndTime": utc_booking_end_seconds,
-                        "internal": True,
+                        # "internal": True,
                         "isAnonymous": False,  # This works when passing True, no matter if the feature is disabled.
                         "isDayPass": True,
                         "resourceId": DESKBIRD_RESOURCE_ID,
                         "zoneItemId": int(current_zone_item_id),
                         "workspaceId": DESKBIRD_WORKSPACE_ID,
-                        "userId": DESKBIRD_USER_ID,
+                        # "userId": DESKBIRD_USER_ID,
                     }
                 ]
             },
